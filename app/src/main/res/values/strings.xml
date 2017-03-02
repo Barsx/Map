@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Test</string>
+    <string name="color">Color</string>
+    <string name="refresh">Refresh</string>
+    <string name="route">Route</string>
+    <string name="in_future">Address - this feature requires more time and will be available in next release</string>
+</resources>
