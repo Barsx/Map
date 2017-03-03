@@ -19,7 +19,8 @@ public class AsyncGetRoute extends AsyncTask<Void, Void, Void> {
 	  
 	public AsyncGetRoute(AsyncListener lst, Vehicle vehicle, Coordinates coordinates) {
 		super();
-		request="https://roads.googleapis.com/v1/nearestRoads?points="+vehicle.coordinates.latitude+","+vehicle.coordinates.longitude+"|"+coordinates.latitude+","+coordinates.longitude+"&key=" + Constants.GOOGLE_KEY;
+		request="http://maps.googleapis.com/maps/api/directions/json?origin="+coordinates.latitude+","+coordinates.longitude+"&destination="+vehicle.coordinates.latitude+","+vehicle.coordinates.longitude+"&sensor=false";
+	//	request="https://roads.googleapis.com/v1/nearestRoads?points="+vehicle.coordinates.latitude+","+vehicle.coordinates.longitude+"|"+coordinates.latitude+","+coordinates.longitude+"&key=" + Constants.GOOGLE_KEY;
 
 		result=null;
 		listener=lst;
@@ -34,8 +35,7 @@ public class AsyncGetRoute extends AsyncTask<Void, Void, Void> {
 	}  
 
 	protected Void doInBackground(Void... params) {
-
-		result=DataLoader.getData(request);
+		result=DataLoader.getTrack(request);
 		return null;
 	}
 
@@ -43,7 +43,7 @@ public class AsyncGetRoute extends AsyncTask<Void, Void, Void> {
 
 		if(listener!=null) {
 			if (result.error==null) {
-				listener.onTaskCompleted(DataParser.getRoute((String)result.data));
+				listener.onTaskCompleted(result);
 			}else{
 				listener.onTaskCompleted(result);
 			}

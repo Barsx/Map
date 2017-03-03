@@ -6,10 +6,12 @@ package test.com.test.util;
 
 public class FieldsJSON {
     //class with constants for parsing JSON data
-
-    public static String POINTS="snappedPoints";
-    public static String POINTS_LATITUDE="latitude";
-    public static String POINTS_LONGITUDE="longitude";
+    public static String LOCATION_START="start_location";
+    public static String LOCATION_END="end_location";
+    public static String LEGS="legs";
+    public static String ROUTES="routes";
+    public static String POINTS_LATITUDE="lat";
+    public static String POINTS_LONGITUDE="lng";
     public static String POINTS_LOCATION="location";
     public static String DATA="data";
     public static String PHOTO="foto";

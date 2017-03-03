@@ -2,15 +2,12 @@ package test.com.test;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.View;
-import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,7 +16,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -37,7 +33,6 @@ import test.com.test.model.Vehicle;
 import test.com.test.net.AsyncListener;
 import test.com.test.net.DataLoader;
 import test.com.test.ui.adapters.MarkerAdapter;
-import test.com.test.util.Constants;
 
 public class ActivityMap extends FragmentActivity implements OnMapReadyCallback {
 
@@ -76,8 +71,8 @@ public class ActivityMap extends FragmentActivity implements OnMapReadyCallback 
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locListener = new LocListener();
 
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,0, locListener);   // requires correct request for permissions
-        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,locListener);
+       /* lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,0, locListener);   // requires correct request for permissions
+        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,locListener);*/
     }
 
 
@@ -94,15 +89,16 @@ public class ActivityMap extends FragmentActivity implements OnMapReadyCallback 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         adapter=new MarkerAdapter(ActivityMap.this.getLayoutInflater(),vehicles,this);
-        mMap.setInfoWindowAdapter(adapter);
-        mMap.setMyLocationEnabled(true); // requires correct request for permissions
+     /*   mMap.setInfoWindowAdapter(adapter);
+        mMap.setMyLocationEnabled(true); // requires correct request for permissions*/
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {  //make route to marker when it's popup is clicked
                 for (int i = 0; i < vehicles.size(); i++) {
                     final Vehicle vehicle = vehicles.get(i);
                     if (marker.equals(vehicle.marker)) {
-                        makeRoute(vehicle);
+                        Coordinates c=new Coordinates(56.5870975,25.0097271);
+                        makeRoute(vehicle,c);
 
                     }
                 }
@@ -113,27 +109,43 @@ public class ActivityMap extends FragmentActivity implements OnMapReadyCallback 
 
     }
 
-    Polyline line;
-    public void makeRoute(Vehicle vehicle){
-       if (line!=null){
-           line.remove();
+    Polyline line_start;
+    Polyline line_end;
+    public void makeRoute(Vehicle vehicle,final Coordinates c){
+       if (line_start!=null){
+           line_start.remove();
        }
-        if (coordinates!=null) {
+        if (line_end!=null){
+            line_end.remove();
+        }
+        if (c!=null) {
             AsyncListener asyncListener = new AsyncListener() {
 
                 @Override
                 public void onTaskCompleted(CustomData o) {
-                    if (o.error == null) {
-                        ArrayList<LatLng> points=(ArrayList<LatLng>)o.data; //receiving points from request and adding to map
+                    System.out.println("!!!! completed");
+                /*    if (o.error == null) {*/
+                        ArrayList<ArrayList<LatLng>> objs=(ArrayList<ArrayList<LatLng>>)o.data;
+                        ArrayList<LatLng> start=objs.get(0); //receiving points from request and adding to map
+
                         PolylineOptions lineOptions = new PolylineOptions();
-                        lineOptions.addAll(points);
+                        lineOptions.addAll(start);
                         lineOptions.width(2);
                         lineOptions.color(Color.RED);
-                        line=mMap.addPolyline(lineOptions);
-                        moveCamera(coordinates,2000);
-                    } else {
+                        line_start=mMap.addPolyline(lineOptions);
+
+
+                        ArrayList<LatLng> end=objs.get(1); //receiving points from request and adding to map
+                        PolylineOptions endlineOptions = new PolylineOptions();
+                        endlineOptions.addAll(end);
+                        endlineOptions.width(2);
+                        endlineOptions.color(Color.BLUE);
+                      //  line_end=mMap.addPolyline(endlineOptions);
+
+                        moveCamera(c,2000);
+                 /*   } else {
                         //error
-                    }
+                    }*/
 
                 }
 
@@ -142,7 +154,8 @@ public class ActivityMap extends FragmentActivity implements OnMapReadyCallback 
 
                 }
             };
-            new AsyncGetRoute(asyncListener, vehicle,coordinates).execute();
+
+            new AsyncGetRoute(asyncListener, vehicle,c).execute();
         }
     }
 
@@ -188,11 +201,11 @@ public class ActivityMap extends FragmentActivity implements OnMapReadyCallback 
         if (rp!=null){  //we don't need working thread more
             rp.exit=true;
         }
-        try {
+    /*    try {
             lm.removeUpdates(locListener);
 
         } catch (Exception e) {
-        }
+        }*/
         super.onDestroy();
     }
 
@@ -214,7 +227,9 @@ public class ActivityMap extends FragmentActivity implements OnMapReadyCallback 
     void updateData(){
 
         String request="http://mobi.connectedcar360.net/api/?op=getlocations&userid="+userID;
-        final CustomData result= DataLoader.getData(request); //receiving data from API
+
+    //    final CustomData result= DataLoader.getData(request); //receiving data from API
+         final CustomData result= new CustomData("{\"data\":[{\"vehicleid\":3,\"lat\":56.97417,\"lon\":24.136508},{\"vehicleid\":4,\"lat\":57.000104,\"lon\":24.131895}]}",null); //receiving data from API
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
